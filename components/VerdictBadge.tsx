@@ -1,4 +1,5 @@
-import Icon, { type IconName } from '@/components/Icon'
+import Icon from '@/components/Icon'
+import type { IconName } from '@/types'
 
 export type VerdictBadgeTone = 'ship' | 'warning' | 'danger' | 'blocked' | 'handoff'
 

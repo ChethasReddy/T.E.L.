@@ -77,7 +77,8 @@ Conflict resolution:
 
 ## 2. Tech stack
 
-- Framework: Next.js 15 with App Router and TypeScript
+- Framework: Next.js 16 with App Router and TypeScript
+- Navigation: `next/link` via the `href` prop on PrimaryButton / SecondaryButton / GhostButton. `useRouter().push()` only when the click also writes to the Zustand store
 - Styling: Tailwind CSS (configured via tailwind.config.ts)
 - Components: shadcn/ui for base primitives, custom components in /components
 - State: Zustand with localStorage persistence via zustand/middleware persist
@@ -172,6 +173,21 @@ export default function Card({ children, className }: CardProps) {}
 ```
 
 Do not define components inside other components. Extract to a named component or a separate file.
+
+### Server vs client components
+
+This project uses Next.js App Router's server-component-first model.
+
+Default: every component is a server component. Add `'use client'` only when a file:
+- Uses React hooks (useState, useEffect, useRouter, useDrillStore, etc.)
+- Attaches DOM event handlers (onClick, onChange, onSubmit, etc.)
+- Calls browser-only APIs (localStorage, MediaRecorder, etc.)
+
+Pages in app/ should stay server components whenever possible. Push `'use client'` to leaf islands. The pattern: keep the page structure server-rendered, and extract any interactive piece that touches the Zustand store or attaches an event handler into a small named client subcomponent in components/. Never mark a page `'use client'` just because one child needs it — extract the child.
+
+Pure navigation does NOT require a client component. PrimaryButton, SecondaryButton, and GhostButton are polymorphic — pass `href: string` and they render as `next/link` (server-friendly, auto-prefetching). Pass `onClick: handler` and they render as `<button>`. The prop types are a discriminated union; passing both is a compile error. Use the `href` form unless the click writes to the store or performs other client-only work.
+
+Canonical client-island components in this codebase: StoreHydrator, DomainCard, SelectedDomainChip, PressureTestCard, StartRecommendedButton, and the three Button components. Every other component is server-rendered.
 
 ### Imports
 
@@ -369,17 +385,44 @@ vibetrace/
       evaluate/route.ts
       agent/route.ts
   components/
-    ui/                            shadcn/ui primitives only
+    ui/                              shadcn/ui primitives only
+
+    # Layout & navigation
     Logo.tsx
-    TopNav.tsx
+    TopNav.tsx                       server, navigates via next/link
+    Footer.tsx
     Stepper.tsx
+    BackgroundBlobs.tsx
+    StoreHydrator.tsx                client island, mounted once in app/layout.tsx
+
+    # Visual primitives
     Card.tsx
     StatusPill.tsx
     VerdictBadge.tsx
+    GradientBadge.tsx
+    SectionLabel.tsx
+    Icon.tsx
+
+    # Buttons (polymorphic: href XOR onClick)
     PrimaryButton.tsx
     SecondaryButton.tsx
     GhostButton.tsx
-    Icon.tsx
+
+    # Landing sections (server components, one per major section)
+    LandingHero.tsx
+    LandingHowItWorks.tsx
+    LandingFeatures.tsx
+    LandingQuote.tsx
+    LandingSponsors.tsx
+    LandingCTAStrip.tsx
+
+    # Store-touching client islands
+    DomainCard.tsx
+    SelectedDomainChip.tsx
+    PressureTestCard.tsx
+    StartRecommendedButton.tsx
+
+    # Drill-screen primitives (planned for Features 6–10)
     Teleprompter.tsx
     WaveformBar.tsx
     GuardrailPulse.tsx
@@ -424,6 +467,7 @@ interface DrillState {
   agentResponse: string | null
   guardrailResult: GuardrailResult | null
   evalResult: EvalResult | null
+  hasHydrated: boolean
   setDomain: (domain: Domain) => void
   setDrill: (drill: PressureTest) => void
   setScenarioKey: (key: string) => void
@@ -431,10 +475,11 @@ interface DrillState {
   setAgentResponse: (response: string) => void
   setGuardrailResult: (result: GuardrailResult) => void
   setEvalResult: (result: EvalResult) => void
+  setHasHydrated: (hasHydrated: boolean) => void
   reset: () => void
 }
 
-const INITIAL_STATE = {
+const INITIAL_DRILL_STATE = {
   domain: null,
   drill: null,
   scenarioKey: null,
@@ -447,7 +492,8 @@ const INITIAL_STATE = {
 export const useDrillStore = create<DrillState>()(
   persist(
     (set) => ({
-      ...INITIAL_STATE,
+      ...INITIAL_DRILL_STATE,
+      hasHydrated: false,
       setDomain: (domain) => set({ domain }),
       setDrill: (drill) => set({ drill }),
       setScenarioKey: (scenarioKey) => set({ scenarioKey }),
@@ -455,12 +501,37 @@ export const useDrillStore = create<DrillState>()(
       setAgentResponse: (agentResponse) => set({ agentResponse }),
       setGuardrailResult: (guardrailResult) => set({ guardrailResult }),
       setEvalResult: (evalResult) => set({ evalResult }),
-      reset: () => set(INITIAL_STATE),
+      setHasHydrated: (hasHydrated) => set({ hasHydrated }),
+      reset: () => set(INITIAL_DRILL_STATE),
     }),
-    { name: 'vibetrace-drill' }
-  )
+    {
+      name: 'vibetrace-drill',
+      skipHydration: true,
+      // hasHydrated is a runtime flag, not persisted state.
+      partialize: (state) => ({
+        domain: state.domain,
+        drill: state.drill,
+        scenarioKey: state.scenarioKey,
+        transcripts: state.transcripts,
+        agentResponse: state.agentResponse,
+        guardrailResult: state.guardrailResult,
+        evalResult: state.evalResult,
+      }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
+    },
+  ),
 )
 ```
+
+### Hydration model — do not change without explicit instruction
+
+The store uses `skipHydration: true` so localStorage is NOT read during initial SSR. Instead, the `StoreHydrator` client component (mounted once in `app/layout.tsx`) calls `useDrillStore.persist.rehydrate()` on mount. When restoration completes, `onRehydrateStorage` flips `hasHydrated` to `true`.
+
+Any component that reads persisted store fields (`domain`, `drill`, `transcripts`, etc.) MUST also read `hasHydrated` and render a skeleton placeholder while it is `false`. Otherwise the first paint shows the store's null defaults, then snaps to persisted values — a visible flicker that also causes React hydration mismatch warnings.
+
+See `components/SelectedDomainChip.tsx` for the canonical skeleton pattern. `partialize` excludes `hasHydrated` from persisted storage so reloads do not start in a stale "hydrated" state.
 
 ---
 
@@ -485,10 +556,24 @@ export type OverallResult = 'PASSED' | 'FAILED' | 'NEEDS_REVIEW'
 export type GuardrailConfidence = 'watch' | 'potential' | 'likely'
 export type TranscriptSpeaker = 'user' | 'agent' | 'system'
 
+export type IconName =
+  | 'arrowRight' | 'chevronRight' | 'chevronLeft' | 'check' | 'x' | 'sparkles'
+  | 'shield' | 'headphones' | 'heart' | 'globe' | 'activity' | 'brain'
+  | 'fileText' | 'play' | 'pause' | 'mic' | 'barChart' | 'clock' | 'eye'
+  | 'zap' | 'target' | 'award' | 'messageCircle' | 'volume2' | 'alert'
+  | 'refresh' | 'arena' | 'layers' | 'flag' | 'user' | 'bot' | 'timer'
+  | 'sliders' | 'cpu' | 'waveform' | 'download' | 'arrowUp' | 'arrowDown'
+  | 'book' | 'star' | 'lock' | 'plus' | 'arrowRightCircle'
+
+// IconName lives in types/index.ts (not in components/Icon.tsx) so types do not
+// depend on UI. Domain.icon and PressureTest.icon use IconName for compile-time
+// safety — adding a new icon requires updating both this union and ICON_PATHS
+// in components/Icon.tsx.
+
 export interface Domain {
   id: DomainId
   name: string
-  icon: string
+  icon: IconName
   blurb: string
   examples: string[]
 }
@@ -496,7 +581,7 @@ export interface Domain {
 export interface PressureTest {
   id: PressureTestId
   name: string
-  icon: string
+  icon: IconName
   blurb: string
   failure: string
   recommended: boolean
@@ -958,6 +1043,12 @@ The agent must never do the following:
 - Write unit or integration tests unless explicitly asked
 - Refactor working code while implementing an unrelated feature
 - Rename exported identifiers without updating every import
+- Pass both `href` and `onClick` to PrimaryButton, SecondaryButton, or GhostButton — the discriminated-union prop type rejects it at compile time, and the intent is ambiguous
+- Re-inline a landing section component back into app/page.tsx — each `Landing*` section is a top-level server component for SSR readability, and the page must stay a thin composition
+- Mark a page `'use client'` without first confirming that no leaf-island split would suffice
+- Move `IconName` back to components/Icon.tsx — it lives in types/index.ts so types do not depend on UI
+- Change Zustand persist configuration (`skipHydration`, `partialize`, `onRehydrateStorage`) or remove the StoreHydrator mount — the `StoreHydrator + hasHydrated` pattern is the canonical SSR-safe hydration approach for this project
+- Read persisted store fields without also reading `hasHydrated`. Components that depend on hydrated state must render a skeleton during the hydration window (see SelectedDomainChip)
 
 ---
 

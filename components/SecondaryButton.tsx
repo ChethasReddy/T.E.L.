@@ -1,16 +1,27 @@
 'use client'
 
+import Link from 'next/link'
 import type { ReactNode, MouseEventHandler } from 'react'
 
 type ButtonSize = 'sm' | 'md' | 'lg'
 
-interface SecondaryButtonProps {
+interface SecondaryButtonBaseProps {
   children: ReactNode
-  onClick?: MouseEventHandler<HTMLButtonElement>
   size?: ButtonSize
   className?: string
-  type?: 'button' | 'submit' | 'reset'
 }
+
+type SecondaryButtonProps =
+  | (SecondaryButtonBaseProps & {
+      href: string
+      onClick?: never
+      type?: never
+    })
+  | (SecondaryButtonBaseProps & {
+      href?: never
+      onClick?: MouseEventHandler<HTMLButtonElement>
+      type?: 'button' | 'submit' | 'reset'
+    })
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
   sm: 'px-4 py-2 text-sm',
@@ -18,19 +29,23 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
   lg: 'px-6 py-3.5 text-base',
 }
 
-export default function SecondaryButton({
-  children,
-  onClick,
-  size = 'md',
-  className = '',
-  type = 'button',
-}: SecondaryButtonProps) {
+const BASE_CLASSES =
+  'inline-flex items-center justify-center font-semibold rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 ring-focus'
+
+export default function SecondaryButton(props: SecondaryButtonProps) {
+  const { children, size = 'md', className = '' } = props
+  const fullClassName = `${BASE_CLASSES} ${SIZE_CLASSES[size]} ${className}`
+
+  if (props.href !== undefined) {
+    return (
+      <Link href={props.href} className={fullClassName}>
+        {children}
+      </Link>
+    )
+  }
+
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      className={`inline-flex items-center justify-center font-semibold rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200 ring-focus ${SIZE_CLASSES[size]} ${className}`}
-    >
+    <button type={props.type ?? 'button'} onClick={props.onClick} className={fullClassName}>
       {children}
     </button>
   )
