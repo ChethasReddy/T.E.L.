@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: #F8FAFC;
+  color: #0F172A;
+}
+
+*::selection { background: rgba(79, 70, 229, 0.18); }
+
+.grad-text {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 60%, #A855F7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.grad-bg {
+  background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+}
+
+.grad-bg-soft {
+  background: linear-gradient(135deg, #EEF2FF 0%, #F5F3FF 100%);
+}
+
+.iso-card {
+  transform: perspective(1400px) rotateX(8deg) rotateY(-10deg) rotateZ(2deg);
+  transform-style: preserve-3d;
+}
+
+.iso-card-light {
+  transform: perspective(1600px) rotateX(4deg) rotateY(-6deg);
+}
+
+.blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blob-indigo { background: radial-gradient(circle, #6366F1 0%, transparent 70%); }
+.blob-violet { background: radial-gradient(circle, #A855F7 0%, transparent 70%); }
+.blob-pink   { background: radial-gradient(circle, #EC4899 0%, transparent 70%); }
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+.ring-focus:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
