@@ -424,13 +424,14 @@ vibetrace/
     StartRecommendedButton.tsx
     BriefingChips.tsx                header status pills, hydration-guarded
     BriefingContent.tsx              contract panel + scripted lines grid, hydration-guarded
+    DrillContent.tsx                 drill stateful container, hydration-guarded, keyed by scenarioKey
 
-    # Drill-screen primitives (planned for Features 6–10)
-    Teleprompter.tsx
-    WaveformBar.tsx
-    GuardrailPulse.tsx
-    DeepEvalCard.tsx
-    ScoreCard.tsx
+    # Drill-screen primitives
+    Teleprompter.tsx                 prev/current/next display with Next + Repeat
+    WaveformBar.tsx                  32-bar visualization, animated when active
+    GuardrailPulse.tsx               post-response pulse card with deep-eval CTA
+    DeepEvalCard.tsx                 (planned, Feature 8)
+    ScoreCard.tsx                    (planned, Feature 10)
   lib/
     scenarios.ts
     contracts.ts
