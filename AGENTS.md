@@ -401,6 +401,7 @@ vibetrace/
     VerdictBadge.tsx
     GradientBadge.tsx
     SectionLabel.tsx
+    Field.tsx                        label + value pair, used by Briefing and Report
     Icon.tsx
 
     # Buttons (polymorphic: href XOR onClick)
@@ -421,6 +422,8 @@ vibetrace/
     SelectedDomainChip.tsx
     PressureTestCard.tsx
     StartRecommendedButton.tsx
+    BriefingChips.tsx                header status pills, hydration-guarded
+    BriefingContent.tsx              contract panel + scripted lines grid, hydration-guarded
 
     # Drill-screen primitives (planned for Features 6–10)
     Teleprompter.tsx
