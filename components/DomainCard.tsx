@@ -24,29 +24,33 @@ export default function DomainCard({ domain, pillLabel }: DomainCardProps) {
   }
 
   return (
-    <Card hover padding="p-8" className="animate-fade-up">
-      <div className="flex items-start justify-between mb-6">
-        <div className="w-14 h-14 rounded-2xl grad-bg-soft border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-soft">
-          <Icon name={domain.icon} className="w-7 h-7" strokeWidth={1.75} />
+    <Card hover padding="p-8" className="animate-fade-up flex flex-col h-full">
+      {/* Upper block absorbs any height difference between cards so the bottom
+          row stays anchored at a consistent distance from the card bottom. */}
+      <div className="flex-1">
+        <div className="flex items-start justify-between mb-6">
+          <div className="w-14 h-14 rounded-2xl grad-bg-soft border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-soft">
+            <Icon name={domain.icon} className="w-7 h-7" strokeWidth={1.75} />
+          </div>
+          <StatusPill tone="indigo">{pillLabel}</StatusPill>
         </div>
-        <StatusPill tone="indigo">{pillLabel}</StatusPill>
-      </div>
-      <h2 className="text-2xl font-extrabold tracking-tight text-ink">{domain.name}</h2>
-      <p className="mt-2 text-slate-600 leading-relaxed">{domain.blurb}</p>
+        <h2 className="text-2xl font-extrabold tracking-tight text-ink">{domain.name}</h2>
+        <p className="mt-2 text-slate-600 leading-relaxed">{domain.blurb}</p>
 
-      <div className="mt-6">
-        <div className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
-          Example tests
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {domain.examples.map((example) => (
-            <span
-              key={example}
-              className="px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700"
-            >
-              {example}
-            </span>
-          ))}
+        <div className="mt-6">
+          <div className="text-xs font-semibold uppercase tracking-wider text-muted mb-3">
+            Example tests
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {domain.examples.map((example) => (
+              <span
+                key={example}
+                className="px-3 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs font-medium text-slate-700"
+              >
+                {example}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
