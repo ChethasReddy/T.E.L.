@@ -13,10 +13,55 @@ export type OverallResult = 'PASSED' | 'FAILED' | 'NEEDS_REVIEW'
 export type GuardrailConfidence = 'watch' | 'potential' | 'likely'
 export type TranscriptSpeaker = 'user' | 'agent' | 'system'
 
+export type IconName =
+  | 'arrowRight'
+  | 'chevronRight'
+  | 'chevronLeft'
+  | 'check'
+  | 'x'
+  | 'sparkles'
+  | 'shield'
+  | 'headphones'
+  | 'heart'
+  | 'globe'
+  | 'activity'
+  | 'brain'
+  | 'fileText'
+  | 'play'
+  | 'pause'
+  | 'mic'
+  | 'barChart'
+  | 'clock'
+  | 'eye'
+  | 'zap'
+  | 'target'
+  | 'award'
+  | 'messageCircle'
+  | 'volume2'
+  | 'alert'
+  | 'refresh'
+  | 'arena'
+  | 'layers'
+  | 'flag'
+  | 'user'
+  | 'bot'
+  | 'timer'
+  | 'sliders'
+  | 'cpu'
+  | 'waveform'
+  | 'download'
+  | 'arrowUp'
+  | 'arrowDown'
+  | 'book'
+  | 'star'
+  | 'lock'
+  | 'plus'
+  | 'arrowRightCircle'
+
 export interface Domain {
   id: DomainId
   name: string
-  icon: string
+  icon: IconName
   blurb: string
   examples: string[]
 }
@@ -24,7 +69,7 @@ export interface Domain {
 export interface PressureTest {
   id: PressureTestId
   name: string
-  icon: string
+  icon: IconName
   blurb: string
   failure: string
   recommended: boolean

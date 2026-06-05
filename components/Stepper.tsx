@@ -1,12 +1,12 @@
 import Icon from '@/components/Icon'
 
-const STEPS = ['Domain', 'Pressure Test', 'Briefing', 'Drill', 'Evaluation', 'Verdict'] as const
-
 type StepState = 'done' | 'active' | 'todo'
 
 interface StepperProps {
   currentStep?: number
 }
+
+const STEPS = ['Domain', 'Pressure Test', 'Briefing', 'Drill', 'Evaluation', 'Verdict'] as const
 
 function getStepState(stepIndex: number, currentStep: number): StepState {
   if (stepIndex < currentStep) {

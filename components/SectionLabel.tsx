@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
-import Icon, { type IconName } from '@/components/Icon'
+import Icon from '@/components/Icon'
+import type { IconName } from '@/types'
 
 interface SectionLabelProps {
   children: ReactNode

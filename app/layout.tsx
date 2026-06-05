@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 
+import StoreHydrator from '@/components/StoreHydrator'
+
 import './globals.css'
 
 const jakarta = Plus_Jakarta_Sans({
@@ -22,7 +24,10 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={jakarta.variable}>
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <StoreHydrator />
+        {children}
+      </body>
     </html>
   )
 }

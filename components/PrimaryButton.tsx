@@ -1,16 +1,27 @@
 'use client'
 
+import Link from 'next/link'
 import type { ReactNode, MouseEventHandler } from 'react'
 
 type ButtonSize = 'sm' | 'md' | 'lg'
 
-interface PrimaryButtonProps {
+interface PrimaryButtonBaseProps {
   children: ReactNode
-  onClick?: MouseEventHandler<HTMLButtonElement>
   size?: ButtonSize
   className?: string
-  type?: 'button' | 'submit' | 'reset'
 }
+
+type PrimaryButtonProps =
+  | (PrimaryButtonBaseProps & {
+      href: string
+      onClick?: never
+      type?: never
+    })
+  | (PrimaryButtonBaseProps & {
+      href?: never
+      onClick?: MouseEventHandler<HTMLButtonElement>
+      type?: 'button' | 'submit' | 'reset'
+    })
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
   sm: 'px-4 py-2 text-sm',
@@ -18,19 +29,23 @@ const SIZE_CLASSES: Record<ButtonSize, string> = {
   lg: 'px-6 py-3.5 text-base',
 }
 
-export default function PrimaryButton({
-  children,
-  onClick,
-  size = 'md',
-  className = '',
-  type = 'button',
-}: PrimaryButtonProps) {
+const BASE_CLASSES =
+  'group inline-flex items-center justify-center font-semibold rounded-full text-white grad-bg shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 ring-focus'
+
+export default function PrimaryButton(props: PrimaryButtonProps) {
+  const { children, size = 'md', className = '' } = props
+  const fullClassName = `${BASE_CLASSES} ${SIZE_CLASSES[size]} ${className}`
+
+  if (props.href !== undefined) {
+    return (
+      <Link href={props.href} className={fullClassName}>
+        {children}
+      </Link>
+    )
+  }
+
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      className={`group inline-flex items-center justify-center font-semibold rounded-full text-white grad-bg shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-200 ring-focus ${SIZE_CLASSES[size]} ${className}`}
-    >
+    <button type={props.type ?? 'button'} onClick={props.onClick} className={fullClassName}>
       {children}
     </button>
   )

@@ -1,6 +1,4 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 import Icon from '@/components/Icon'
 import Logo from '@/components/Logo'
@@ -14,18 +12,12 @@ const NAV_ITEMS = [
 ] as const
 
 export default function TopNav() {
-  const router = useRouter()
-
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-        <button
-          onClick={() => router.push('/')}
-          className="ring-focus rounded-lg"
-          aria-label="VibeTrace Arena home"
-        >
+        <Link href="/" className="ring-focus rounded-lg" aria-label="VibeTrace Arena home">
           <Logo />
-        </button>
+        </Link>
         <nav className="hidden md:flex items-center gap-1">
           {NAV_ITEMS.map((item) => (
             <button
@@ -41,7 +33,7 @@ export default function TopNav() {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-live-dot" />
             Eval mode
           </span>
-          <PrimaryButton size="sm" onClick={() => router.push('/domain')}>
+          <PrimaryButton size="sm" href="/domain">
             Start Drill
             <Icon name="arrowRight" className="w-4 h-4 ml-1.5" />
           </PrimaryButton>
