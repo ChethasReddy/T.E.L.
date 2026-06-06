@@ -402,6 +402,7 @@ vibetrace/
     GradientBadge.tsx
     SectionLabel.tsx
     Field.tsx                        label + value pair, used by Briefing and Report
+    SumRow.tsx                       label + value summary row, used by Verdict and Report
     Icon.tsx
 
     # Buttons (polymorphic: href XOR onClick)
@@ -425,6 +426,8 @@ vibetrace/
     BriefingChips.tsx                header status pills, hydration-guarded
     BriefingContent.tsx              contract panel + scripted lines grid, hydration-guarded
     DrillContent.tsx                 drill stateful container, hydration-guarded, keyed by scenarioKey
+    RepairComparison.tsx             before/after + what-changed, hydration-guarded, reads evalResult
+    VerdictDetails.tsx               hero verdict + summary + checklist, hydration-guarded, reads evalResult
 
     # Drill-screen primitives
     Teleprompter.tsx                 prev/current/next display with Next + Repeat
