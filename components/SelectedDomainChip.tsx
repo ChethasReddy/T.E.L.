@@ -4,14 +4,15 @@ import Link from 'next/link'
 
 import Card from '@/components/Card'
 import Icon from '@/components/Icon'
+import { DOMAINS } from '@/lib/scenarios'
 import { useDrillStore } from '@/lib/store'
 
 export default function SelectedDomainChip() {
   const hasHydrated = useDrillStore((state) => state.hasHydrated)
-  const domain = useDrillStore((state) => state.domain)
+  const storedDomain = useDrillStore((state) => state.domain)
 
-  if (!hasHydrated || domain === null) {
-    // Skeleton: same footprint, no flicker when store rehydrates from localStorage.
+  if (!hasHydrated) {
+    // Skeleton only during the hydration window: same footprint, no flicker.
     return (
       <Card padding="p-4" className="min-w-[260px]">
         <div className="flex items-center gap-3">
@@ -26,6 +27,10 @@ export default function SelectedDomainChip() {
       </Card>
     )
   }
+
+  // Hydrated with no domain (e.g. after reset → /pressure): fall back to the
+  // first domain for display, matching the prototype's `state.domain || DOMAINS[0]`.
+  const domain = storedDomain ?? DOMAINS[0]
 
   return (
     <Card padding="p-4" className="min-w-[260px]">

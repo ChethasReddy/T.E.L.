@@ -45,7 +45,17 @@ export const useDrillStore = create<DrillState>()(
       ...INITIAL_DRILL_STATE,
       hasHydrated: false,
       setDomain: (domain) => set({ domain }),
-      setDrill: (drill) => set({ drill }),
+      // Selecting a new drill starts a fresh run: clear all downstream results
+      // so the next drill never shows the previous drill's transcripts, guardrail
+      // pulse, or evaluation.
+      setDrill: (drill) =>
+        set({
+          drill,
+          transcripts: [],
+          agentResponse: null,
+          guardrailResult: null,
+          evalResult: null,
+        }),
       setScenarioKey: (scenarioKey) => set({ scenarioKey }),
       addTranscript: (entry) =>
         set((state) => ({ transcripts: [...state.transcripts, entry] })),
