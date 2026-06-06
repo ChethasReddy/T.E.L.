@@ -402,7 +402,7 @@ vibetrace/
     GradientBadge.tsx
     SectionLabel.tsx
     Field.tsx                        label + value pair, used by Briefing and Report
-    SumRow.tsx                       label + value summary row, used by Verdict and Report
+    SumRow.tsx                       label + value summary row, used by Verdict
     Icon.tsx
 
     # Buttons (polymorphic: href XOR onClick)
@@ -428,13 +428,14 @@ vibetrace/
     DrillContent.tsx                 drill stateful container, hydration-guarded, keyed by scenarioKey
     RepairComparison.tsx             before/after + what-changed, hydration-guarded, reads evalResult
     VerdictDetails.tsx               hero verdict + summary + checklist, hydration-guarded, reads evalResult
+    ReportContent.tsx                full drill report + reset actions, hydration-guarded, reads evalResult
 
     # Drill-screen primitives
     Teleprompter.tsx                 prev/current/next display with Next + Repeat
     WaveformBar.tsx                  32-bar visualization, animated when active
     GuardrailPulse.tsx               post-response pulse card with deep-eval CTA
-    DeepEvalCard.tsx                 (planned, Feature 8)
-    ScoreCard.tsx                    (planned, Feature 10)
+    DeepEvalCard.tsx                 deep evaluation report, fetches /api/evaluate, hydration-guarded
+    ScoreCard.tsx                    5-metric bar chart + overall pill, presentational
   lib/
     scenarios.ts
     contracts.ts
@@ -502,7 +503,15 @@ export const useDrillStore = create<DrillState>()(
       ...INITIAL_DRILL_STATE,
       hasHydrated: false,
       setDomain: (domain) => set({ domain }),
-      setDrill: (drill) => set({ drill }),
+      // Selecting a new drill starts a fresh run: clear all downstream results.
+      setDrill: (drill) =>
+        set({
+          drill,
+          transcripts: [],
+          agentResponse: null,
+          guardrailResult: null,
+          evalResult: null,
+        }),
       setScenarioKey: (scenarioKey) => set({ scenarioKey }),
       addTranscript: (entry) => set((state) => ({ transcripts: [...state.transcripts, entry] })),
       setAgentResponse: (agentResponse) => set({ agentResponse }),
@@ -1056,6 +1065,7 @@ The agent must never do the following:
 - Move `IconName` back to components/Icon.tsx — it lives in types/index.ts so types do not depend on UI
 - Change Zustand persist configuration (`skipHydration`, `partialize`, `onRehydrateStorage`) or remove the StoreHydrator mount — the `StoreHydrator + hasHydrated` pattern is the canonical SSR-safe hydration approach for this project
 - Read persisted store fields without also reading `hasHydrated`. Components that depend on hydrated state must render a skeleton during the hydration window (see SelectedDomainChip)
+- Simplify `setDrill` back to `set({ drill })`. It deliberately clears `transcripts`, `agentResponse`, `guardrailResult`, and `evalResult` so a new drill never shows the previous drill's results. Removing this reintroduces stale-evaluation bugs across /eval, /repair, /verdict, /report
 
 ---
 
