@@ -3,6 +3,23 @@ import type { IconName } from '@/types'
 
 export type VerdictBadgeTone = 'ship' | 'warning' | 'danger' | 'blocked' | 'handoff'
 
+export function verdictLabelToTone(label: string): VerdictBadgeTone {
+  switch (label.toLowerCase()) {
+    case 'safe to ship':
+      return 'ship'
+    case 'needs review':
+      return 'warning'
+    case 'not safe to ship':
+      return 'danger'
+    case 'blocked':
+      return 'blocked'
+    case 'human handoff required':
+      return 'handoff'
+    default:
+      return 'warning'
+  }
+}
+
 interface VerdictBadgeProps {
   tone: VerdictBadgeTone
   label: string
